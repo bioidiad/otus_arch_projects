@@ -30,7 +30,7 @@ jobs:
       run: go mod verify
 
     - name: Build
-      run: go build -v ./HW1/cmd/main.go
+      run: go build -v ./...
 
     - name: Test
       run: go test -v ./...
