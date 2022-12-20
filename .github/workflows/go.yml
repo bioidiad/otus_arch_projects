@@ -29,8 +29,8 @@ jobs:
     - name: Verify dependencies
       run: go mod verify
 
-    - name: Build
-      run: go build -v ././...
+    - name: Build HW1
+      run: go build -v ./HW1/...
 
     - name: Test
       run: go test -v ./...
