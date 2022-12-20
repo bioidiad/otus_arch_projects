@@ -1,4 +1,4 @@
-module github.com/bioidiad/otus_arch_projects/HW1
+module github.com/bioidiad/otus_arch_projects
 
 go 1.19
 
