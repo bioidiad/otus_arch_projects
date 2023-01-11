@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
@@ -51,4 +52,13 @@ func Solve(a, b, c float64) ([]float64, error) {
 	task := QuadEq{A: a, B: b, C: c}
 	err := task.solve()
 	return task.roots, err
+}
+
+func main() {
+	res, err := Solve(1.0, 0.0, -1.0)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(res)
+	}
 }
