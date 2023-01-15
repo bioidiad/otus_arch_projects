@@ -1,58 +1,64 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"github.com/shopspring/decimal"
 	"math"
 )
 
+const (
+	Epsilon = 10e-5
+)
+
+var (
+	ErrNotQuadratic        = errors.New("a == 0")
+	ErrInvalidCoefficients = errors.New("invalid coefficients")
+)
+
 type QuadEq struct {
-	A        float64
-	B        float64
-	C        float64
-	Solution struct {
-		isSolvable bool
-		roots      []float64
-	}
+	A     float64
+	B     float64
+	C     float64
+	roots []float64
 }
 
-func (qe *QuadEq) solve() {
-	a, b, c := decimal.NewFromFloat(qe.A), decimal.NewFromFloat(qe.B), decimal.NewFromFloat(qe.C)
-	d := b.Mul(b).Sub(a.Mul(c.Mul(decimal.NewFromFloat(4))))
-	if d.LessThan(decimal.NewFromFloat(0)) {
-		qe.Solution.isSolvable = false
-	} else if d.Equals(decimal.NewFromFloat(0)) {
-		tmp := b.Div(a.Mul(decimal.NewFromFloat(-2)))
-		res, _ := tmp.Float64()
-		qe.Solution.isSolvable = true
-		qe.Solution.roots = append(qe.Solution.roots, res)
-	} else {
-		floatD, _ := d.Float64()
-		decSqRoot := decimal.NewFromFloat(math.Sqrt(floatD))
-		solution1, _ := (b.Mul(decimal.NewFromFloat(-1)).Add(decSqRoot).Div(a.Mul(decimal.NewFromFloat(2)))).Float64()
-		solution2, _ := (b.Mul(decimal.NewFromFloat(-1)).Sub(decSqRoot).Div(a.Mul(decimal.NewFromFloat(2)))).Float64()
-		qe.Solution.isSolvable = true
-		qe.Solution.roots = append(qe.Solution.roots, solution1, solution2)
+func (qe *QuadEq) solve() error {
+	if qe.A < Epsilon {
+		return ErrNotQuadratic
 	}
+
+	var discriminant float64
+	discriminant = (qe.B * qe.B) - (4 * qe.A * qe.C)
+
+	if discriminant > Epsilon {
+		solution1 := -qe.B + math.Sqrt(discriminant)/(2*qe.A)
+		solution2 := -qe.B - math.Sqrt(discriminant)/(2*qe.A)
+		var roots []float64
+		roots = append(qe.roots, solution1, solution2)
+		qe.roots = roots
+	} else if discriminant < Epsilon && discriminant > -Epsilon {
+		solution := -qe.B / (2 * qe.A)
+		var roots []float64
+		roots = append(qe.roots, solution, solution)
+		qe.roots = roots
+	} else if discriminant < 0 {
+	} else {
+		return ErrInvalidCoefficients
+	}
+	return nil
+}
+
+func Solve(a, b, c float64) ([]float64, error) {
+	task := QuadEq{A: a, B: b, C: c}
+	err := task.solve()
+	return task.roots, err
 }
 
 func main() {
-	task := QuadEq{A: -4, B: 28, C: -49}
-	task.solve()
-	if task.Solution.isSolvable {
-		fmt.Println(task.Solution.roots)
+	res, err := Solve(1.0, 0.0, -1.0)
+	if err != nil {
+		fmt.Println(err)
 	} else {
-		fmt.Println("No solution")
+		fmt.Println(res)
 	}
-}
-
-func solveQuadratic(a float64, b float64, c float64) (float64, float64) {
-	// calculate the discriminant
-	discriminant := b*b - 4*a*c
-
-	// calculate the two solutions
-	solution1 := (-b + math.Sqrt(discriminant)) / (2 * a)
-	solution2 := (-b - math.Sqrt(discriminant)) / (2 * a)
-
-	return solution1, solution2
 }
